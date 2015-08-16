@@ -1,0 +1,20 @@
+{
+  "name": "flow-jsdoc",
+  "version": "0.1.0",
+  "description": "Represent flow type annotations with JSDoc syntax",
+  "main": "index.js",
+  "dependencies": {
+    "doctrine": "^0.6.4",
+    "esprima": "^2.5.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "flowtype",
+    "jsdoc3"
+  ],
+  "author": "Kegan Dougal",
+  "license": "Apache-2.0"
+}
