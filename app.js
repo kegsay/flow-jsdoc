@@ -12,11 +12,11 @@ var opts = nopt({
 });
 
 if (!opts.file) {
-	console.log("Usage: node app.js -f path/to/file.js");
-	process.exit(1);
-	return;
+    console.log("Usage: node app.js -f path/to/file.js");
+    process.exit(1);
+    return;
 }
 
 console.log(
-	jsdocFlow(fs.readFileSync(opts.file, "utf8"))
+    jsdocFlow(fs.readFileSync(opts.file, "utf8"))
 );
