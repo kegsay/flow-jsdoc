@@ -3,6 +3,8 @@ Use JSDoc to represent Flow annotations
 
 # Usage
 
+*This tool will NOT apply* `/* @flow */` *to the file. You still need to do that!*
+
 ## Via imports
 ```javascript
  var flowJsdoc = require("flow-jsdoc");
@@ -22,21 +24,24 @@ Use JSDoc to represent Flow annotations
 # annotated file prints to stdout
 ```
 
-# Mappings
+# What this does
 Currently, this tool will only work on functions. It will handle functions represented in the following ways:
  * `function foo(bar) {}`
  * `var foo = function(bar) {}`
  * `ObjClass.prototype.foo = function(bar) {}` - ES5 Classes
  * `class ObjClass { foo(bar) {} }` - ES6 Classes
 
-This will currently do the following mappings from JSDoc to Flow:
+For each recognised function, the JSDoc tags `@param` and `@return` will be mapped to Flow annotations. This will currently do the following mappings from JSDoc to Flow:
  * `{AnyThingHere}` => `: AnyThingHere`
  * `{String[]}` => `: Array<String>`
  * `{*}` => `: any`
  * `{Object|String}` => `: Object | String`
  * `{string=}` => `: ?string`
 
+This tool will then produce the whole file again with flow annotations included (JSDoc preserved).
+
 # Additions
 There are plans for this tool to:
  * Handle module mappings (so you don't need to use Flow `import Foo from "../bar.js"` statements for types)
  * Handle callback type resolution (mapping `@callback` sensibly)
+ * Add a `-d` option and `--outDir` to the CLI to map entire directories across. 
