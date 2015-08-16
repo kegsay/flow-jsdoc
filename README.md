@@ -42,6 +42,15 @@ This tool will then produce the whole file again with flow annotations included 
 
 # Additions
 There are plans for this tool to:
- * Handle module mappings (so you don't need to use Flow `import Foo from "../bar.js"` statements for types)
+ * Handle module mappings (so you don't need to use `import Foo from "../bar.js"` statements for Flow to recognise imported types)
+ * Handle the idiom:
+ 
+   ```javascript
+    var obj = {
+      foo: function(bar) {
+        // stuff
+      }
+    }
+   ```
  * Handle callback type resolution (mapping `@callback` sensibly)
  * Add a `-d` option and `--outDir` to the CLI to map entire directories across. 
