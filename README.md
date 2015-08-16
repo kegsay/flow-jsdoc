@@ -32,17 +32,20 @@ Currently, this tool will only work on functions. It will handle functions repre
  * `class ObjClass { foo(bar) {} }` - ES6 Classes
 
 For each recognised function, the JSDoc tags `@param` and `@return` will be mapped to Flow annotations. This will currently do the following mappings from JSDoc to Flow:
- * `{AnyThingHere}` => `: AnyThingHere`
- * `{String[]}` => `: Array<String>`
- * `{*}` => `: any`
- * `{Object|String}` => `: Object | String`
- * `{string=}` => `: ?string`
+ * `{AnyThingHere}` => `: AnyThingHere` (Name expressions)
+ * `{String[]}` => `: Array<String>` (Type applications)
+ * `{*}` => `: any` (Any type)
+ * `{Object|String}` => `: Object | String` (Type unions)
+ * `{string=}` => `: ?string` (Optional params)
 
 This tool will then produce the whole file again with flow annotations included (JSDoc preserved).
 
 # Additions
 There are plans for this tool to:
  * Handle module mappings (so you don't need to use `import Foo from "../bar.js"` statements for Flow to recognise imported types)
+ * Handle record types `{{a: number, b: string, c}}`
+ * Handle nullable types `{?Object}`
+ * Handle type definitions `@typedef`
  * Handle the idiom:
  
    ```javascript
