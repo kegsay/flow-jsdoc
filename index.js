@@ -62,7 +62,11 @@ function jsdocTypeToFlowType(jsdocType) {
         case "AllLiteral": // {*}
             return "any";
         case "OptionalType": // {string=}
+        case "NullableType": // {?string}
             return "?" + jsdocTypeToFlowType(jsdocType.expression);
+        default:
+            // console.log("Unknown jsdoc type: %s", JSON.stringify(jsdocType));
+            break;
     }
 }
 
