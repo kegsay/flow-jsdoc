@@ -17,7 +17,8 @@ function jsdocTagToFlowTag(tag) {
 /**
  * Extract formatted JSDoc from a comment.
  * @param {String} comment The comment which may have JSDoc in it.
- * @return {Object} With 'params' and 'return' arrays which have 'loc', 'name' and 'type' elements.
+ * @return {Object} With 'params' and 'return' arrays which have 'loc', 'name'
+ * and 'type' elements.
  */
 function extractJsdoc(comment) {
     var docAst = doctrine.parse(comment, { unwrap: true });
@@ -47,7 +48,8 @@ function jsdocTypeToFlowType(jsdocType) {
         case "NameExpression": // {string}
             return jsdocType.name;
         case "TypeApplication": // {Foo<Bar>}
-            var baseType = jsdocTypeToFlowType(jsdocType.expression); // e.g. 'Array' in Array<String>
+            // e.g. 'Array' in Array<String>
+            var baseType = jsdocTypeToFlowType(jsdocType.expression);
             // Flow only supports single types for generics
             var specificType = jsdocTypeToFlowType(jsdocType.applications[0]);
             if (baseType && specificType) {
@@ -77,20 +79,25 @@ function jsdocTypeToFlowType(jsdocType) {
  */
 function getCommentedFunctionNode(node) {
     if (!node.leadingComments) {
-        // JSDoc comments are always before the function, so if there is nothing here, we ain't interested.
+        // JSDoc comments are always before the function, so if there is
+        // nothing here, we ain't interested.
         return null;
     }
     /*
-     * We handle 4 different function representations:
+     * We handle 5 different function representations:
      *
-     *     Type                   Path to Function              Example
-     * ==============================================================================================
-     * FunctionDeclaration               -                  function foo(bar) {}
-     * VariableDeclaration       .declarations[0].init      var foo = function(bar) {}
-     * ExpressionStatement       .expression.right          ObjClass.prototype.foo = function(bar) {}
-     * MethodDefinition          .value                     class ObjClass { foo(bar) {} }
+     *     Type               Path to Function              Example
+     * ==========================================================================================
+     * FunctionDeclaration           -                  function foo(bar) {}
+     * VariableDeclaration   .declarations[0].init      var foo = function(bar) {}
+     * ExpressionStatement   .expression.right          ObjClass.prototype.foo = function(bar) {}
+     * MethodDefinition      .value                     class ObjClass { foo(bar) {} }
+     * Property              .value                     var obj = { key: function(bar) {} }
      */
-    var nodeTypes = ["FunctionDeclaration", "ExpressionStatement", "VariableDeclaration", "MethodDefinition"];
+    var nodeTypes = [
+        "FunctionDeclaration", "ExpressionStatement", "VariableDeclaration",
+        "MethodDefinition", "Property"
+    ];
     if (nodeTypes.indexOf(node.type) === -1) {
         return null;
     }
@@ -108,8 +115,12 @@ function getCommentedFunctionNode(node) {
         case "MethodDefinition":
             funcNode = node.value;
             break;
+        case "Property":
+            funcNode = node.value;
+            break;
     }
-    if (!funcNode || ["FunctionDeclaration", "FunctionExpression"].indexOf(funcNode.type) === -1) {
+    var funcNodeTypes = ["FunctionDeclaration", "FunctionExpression"];
+    if (!funcNode || funcNodeTypes.indexOf(funcNode.type) === -1) {
         // We can't find a function here which can map to leadingComments.
         return null;
     }
@@ -130,7 +141,8 @@ function getCommentedFunctionNode(node) {
 module.exports = function(src, opts) {
     opts = opts || {};
 
-    // Esprima has an undocumented 'attachComment' option which binds comments to the nodes in the AST
+    // Esprima has an undocumented 'attachComment' option which binds comments
+    // to the nodes in the AST
     var output = falafel(src, {attachComment: true}, function (node) {
         var i;
         var funcNode = getCommentedFunctionNode(node);
@@ -141,17 +153,23 @@ module.exports = function(src, opts) {
         // Pair up the function params with the JSDoc params (if they exist)
         funcNode.node.params.forEach(function(param) {
             for (i = 0; i < funcNode.jsdoc.params.length; i++) {
-                if (funcNode.jsdoc.params[i].name === param.name && funcNode.jsdoc.params[i].type) {
+                if (funcNode.jsdoc.params[i].name === param.name &&
+                        funcNode.jsdoc.params[i].type) {
                     // replace the function param name with the type annotated param
-                    param.update(param.source() + ": " + funcNode.jsdoc.params[i].type);
+                    param.update(
+                        param.source() + ": " + funcNode.jsdoc.params[i].type
+                    );
                 }
             }
         });
 
         // Pair up the return value if possible
-        var returnDoc = funcNode.jsdoc.returns[0]; // only support 1 return type currently
+        // we only support 1 return type currently
+        var returnDoc = funcNode.jsdoc.returns[0];
         if (returnDoc && returnDoc.type && funcNode.node.body) {
-            funcNode.node.body.update(": " + returnDoc.type + " " + funcNode.node.body.source());
+            funcNode.node.body.update(
+                ": " + returnDoc.type + " " + funcNode.node.body.source()
+            );
         }
     });
 
