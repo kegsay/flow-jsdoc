@@ -10,6 +10,9 @@
     "mkdirp": "^0.5.1",
     "nopt": "^3.0.3"
   },
+  "repository": {
+    "url": "https://github.com/Kegsay/flow-jsdoc"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

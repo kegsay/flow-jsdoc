@@ -73,12 +73,15 @@ else if (opts.directory && opts.outdir) {
 }
 else {
     console.log("Convert JSDoc comments in a file to Flow annotations");
+    console.log("Usage:");
+    console.log("  flow-jsdoc -f FILEPATH");
+    console.log("  flow-jsdoc -d PATH -o PATH [-c]");
     console.log("Options:");
-    console.log(" -f, --file FILEPATH    The .js file with JSDoc to convert");
+    console.log(" -f, --file FILEPATH    The .js file with JSDoc to convert. Prints to stdout.");
     console.log(" -d, --directory PATH   The directory with .js files to convert. Will inspect recursively.");
-    console.log(" -o, --outdir PATH      The output directory to dump flow-annotated files to");
-    console.log(" -c, --copy             Set to copy other file extensions across to outdir");
-    console.log("File Usage:\n  node app.js -f path/to/file.js");
-    console.log("Directory Usage:\n  node app.js -d path/to/dir -o out/dir -c");
+    console.log(" -o, --outdir PATH      Required if -d is set. The output directory to dump flow-annotated files to.");
+    console.log(" -c, --copy             Set to copy other file extensions across to outdir.");
+    console.log("File Usage:\n  flow-jsdoc -f path/to/file.js");
+    console.log("Directory Usage:\n  flow-jsdoc -d path/to/dir -o out/dir -c");
     process.exit(0);
 }
