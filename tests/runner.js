@@ -17,6 +17,7 @@ glob(inputDir + "/*.js", function(err, files) {
         return;
     }
     var exitCode = 0;
+    var numFails = 0;
     files.forEach(function(f) {
         f = path.resolve(f); // convert \ to / so we can replace with out dir
         var outFile = f.replace(inputDir, outputDir);
@@ -40,7 +41,7 @@ glob(inputDir + "/*.js", function(err, files) {
                                 "Unexpected char: '" + badChar + "'. " +
                                 "Got \"" + actualSnippet + "\", expected \"" + expectedSnippet + "\"."
                             );
-                            exitCode = 1;
+                            numFails += 1;
                             break;
                         }
                     }
@@ -52,10 +53,11 @@ glob(inputDir + "/*.js", function(err, files) {
                 "%s:%s %s", outFile, 0,
                 "Expected " + expectedOutLines.length + " lines, got " + actualOutLines.length
             );
-            exitCode = 1;
+            numFails += 1;
         }
     });
-    process.exit(exitCode);
+    console.log("%s test failures.", numFails);
+    process.exit(numFails > 0 ? 1 : 0);
 });
 
 function snippet(line, charNum) {
