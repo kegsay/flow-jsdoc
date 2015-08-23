@@ -8,7 +8,7 @@ Use JSDoc to represent Flow annotations
 ## Via imports
 ```javascript
  var flowJsdoc = require("flow-jsdoc");
- var fileContents = // extract your file contents e.g. via 'fs'
+ var fileContents = // extract your file contents e.g. via 'fs' - this should be a string
  var opts = {
  // no options yet!
  };
@@ -18,9 +18,8 @@ Use JSDoc to represent Flow annotations
 
 ## CLI
 ```
- $ npm install
- $ npm install nopt
- $ node app.js -f path/to/file.js
+ $ npm install -g flow-jsdoc
+ $ flow-jsdoc -f path/to/file.js
 # annotated file prints to stdout
 ```
 
@@ -43,9 +42,10 @@ For each recognised function, the JSDoc tags `@param` and `@return` will be mapp
 This tool will then produce the whole file again with flow annotations included (JSDoc preserved).
 
 # Additions
-There are plans for this tool to:
- * Handle module mappings (so you don't need to use `import Foo from "../bar.js"` statements for Flow to recognise imported types)
+There are plans for this tool to (roughly in priority order):
+ * **Support ES5 prototype classes.** Flow has limited support for prototype classes. It handles stuff assigned to the `prototype` but not properties which are assigned to `this`. Flow has "field type declarations" which declares the set of properties which will appear on `this`. However, their syntax only supports ES6 classes. JSDoc already has a syntax for setting properties: `@name Class#member`. This tool should be able to convert those docs into something parsable by Flow.
  * Handle record types `{{a: number, b: string, c}}`
+ * **Auto-require()ing types you reference in other files if you don't import them yourself.** When you start type-annotating, sometimes you'll declare a type that is defined in another file but you won't need to require() it manually (e.g. because it's just passed as a function argument). Flow *needs* to know where the type is declared, so you need to import it somehow even if it's a no-op in the code. This tool should be able to automatically do this.
  * Handle type definitions `@typedef`
  * Handle callback type resolution (mapping `@callback` sensibly)
 
