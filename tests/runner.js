@@ -23,7 +23,8 @@ glob(inputDir + "/*.js", function(err, files) {
         var outFile = f.replace(inputDir, outputDir);
         var expectedOutput = fs.readFileSync(outFile, "utf8");
         var actualOutput = new String(jsdocFlow(fs.readFileSync(f, "utf8")));
-        
+        // console.log("EXPECT: " + expectedOutput);
+        // console.log("ACTUAL: " + actualOutput);
         var actualOutLines = actualOutput.split("\n");
         var expectedOutLines = expectedOutput.split("\n");
         if (actualOutLines.length === expectedOutLines.length) {
@@ -61,10 +62,10 @@ glob(inputDir + "/*.js", function(err, files) {
 });
 
 function snippet(line, charNum) {
-    var leftMinSnip = Math.max(charNum - 10, 0);
-    var leftMaxSnip = Math.max(charNum - 1, 0);
+    var leftMinSnip = Math.max(charNum - 15, 0);
+    var leftMaxSnip = Math.max(charNum, 0);
     var rightMinSnip = Math.min(charNum + 1, line.length);
-    var rightMaxSnip = Math.min(charNum + 10, line.length);
+    var rightMaxSnip = Math.min(charNum + 15, line.length);
     return (
         escape(line.substring(leftMinSnip, leftMaxSnip)) +
         RED + escape(line[charNum]) + RESET +
