@@ -84,6 +84,10 @@ function getCommentedFunctionNode(node) {
         return null;
     }
     /*
+    console.log("=================");
+    console.log("type: " + node.type);
+    console.log(util.inspect(node)); */
+    /*
      * We handle 5 different function representations:
      *
      *     Type               Path to Function              Example
@@ -93,10 +97,11 @@ function getCommentedFunctionNode(node) {
      * ExpressionStatement   .expression.right          ObjClass.prototype.foo = function(bar) {}
      * MethodDefinition      .value                     class ObjClass { foo(bar) {} }
      * Property              .value                     var obj = { key: function(bar) {} }
+     * ReturnStatement       .argument                  return function(foo, bar) {}
      */
     var nodeTypes = [
         "FunctionDeclaration", "ExpressionStatement", "VariableDeclaration",
-        "MethodDefinition", "Property"
+        "MethodDefinition", "Property", "ReturnStatement"
     ];
     if (nodeTypes.indexOf(node.type) === -1) {
         return null;
@@ -117,6 +122,9 @@ function getCommentedFunctionNode(node) {
             break;
         case "Property":
             funcNode = node.value;
+            break;
+        case "ReturnStatement":
+            funcNode = node.argument;
             break;
     }
     var funcNodeTypes = ["FunctionDeclaration", "FunctionExpression"];

@@ -57,7 +57,7 @@ glob(inputDir + "/*.js", function(err, files) {
             numFails += 1;
         }
     });
-    console.log("%s test failures.", numFails);
+    console.log("%s test failures out of %s tests.", numFails, files.length);
     process.exit(numFails > 0 ? 1 : 0);
 });
 
