@@ -1,11 +1,25 @@
 # flow-jsdoc
-Use JSDoc to represent Flow annotations
+Use JSDoc to represent Flow annotations. The goal of this project is to make type checking as easy as running a linter, so you can take any project and run the following to get type errors:
+```
+ $ flow-jsdoc -d ./lib -o ./annotated
+ $ flow check --all ./annotated
+```
 
 # Usage
 
 *This tool will NOT apply* `/* @flow */` *to the file. You still need to do that!*
 
-## Via imports
+## CLI
+```
+ $ npm install -g flow-jsdoc
+ $ flow-jsdoc -f path/to/file.js
+# annotated file prints to stdout
+
+ $ flow-jsdoc -d path/to/lib -o path/to/output
+# every file in path/to/lib is processed and output to path/to/output (directory structure preserved)
+```
+
+## JS
 ```javascript
  var flowJsdoc = require("flow-jsdoc");
  var fileContents = // extract your file contents e.g. via 'fs' - this should be a string
@@ -16,12 +30,7 @@ Use JSDoc to represent Flow annotations
  // write out annotated contents to file
 ```
 
-## CLI
-```
- $ npm install -g flow-jsdoc
- $ flow-jsdoc -f path/to/file.js
-# annotated file prints to stdout
-```
+
 
 # What this does
 Currently, this tool will only work on functions. It will handle functions represented in the following ways:
@@ -48,4 +57,3 @@ There are plans for this tool to (roughly in priority order):
  * **Auto-require()ing types you reference in other files if you don't import them yourself.** When you start type-annotating, sometimes you'll declare a type that is defined in another file but you won't need to require() it manually (e.g. because it's just passed as a function argument). Flow *needs* to know where the type is declared, so you need to import it somehow even if it's a no-op in the code. This tool should be able to automatically do this.
  * Handle type definitions `@typedef`
  * Handle callback type resolution (mapping `@callback` sensibly)
-
