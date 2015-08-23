@@ -29,23 +29,25 @@ glob(inputDir + "/*.js", function(err, files) {
         var expectedOutLines = expectedOutput.split("\n");
         if (actualOutLines.length === expectedOutLines.length) {
             for (var lineNum = 0; lineNum < actualOutLines.length; lineNum++) {
-                if (actualOutLines[lineNum] !== expectedOutLines[lineNum]) {
-                    var lineLength = Math.max(actualOutLines[lineNum].length, expectedOutLines[lineNum].length);
-                    for (var charNum = 0; charNum < lineLength; charNum++) {
-                        if (actualOutLines[lineNum][charNum] !== expectedOutLines[lineNum][charNum]) {
-                            var badChar = escape(actualOutLines[lineNum][charNum]);
-                            var actualSnippet = snippet(actualOutLines[lineNum], charNum);
-                            var expectedSnippet = snippet(expectedOutLines[lineNum], charNum);
-                            
-                            console.error(
-                                "%s:%s:%s %s", outFile, lineNum + 1, charNum + 1,
-                                "Unexpected char: '" + badChar + "'. " +
-                                "Got \"" + actualSnippet + "\", expected \"" + expectedSnippet + "\"."
-                            );
-                            numFails += 1;
-                            break;
-                        }
+                if (actualOutLines[lineNum] === expectedOutLines[lineNum]) {
+                    continue;
+                }
+                var lineLength = Math.max(actualOutLines[lineNum].length, expectedOutLines[lineNum].length);
+                for (var charNum = 0; charNum < lineLength; charNum++) {
+                    if (actualOutLines[lineNum][charNum] === expectedOutLines[lineNum][charNum]) {
+                        continue;
                     }
+                    var badChar = escape(actualOutLines[lineNum][charNum]);
+                    var actualSnippet = snippet(actualOutLines[lineNum], charNum);
+                    var expectedSnippet = snippet(expectedOutLines[lineNum], charNum);
+                    
+                    console.error(
+                        "%s:%s:%s %s", outFile, lineNum + 1, charNum + 1,
+                        "Unexpected char: '" + badChar + "'. " +
+                        "Got \"" + actualSnippet + "\", expected \"" + expectedSnippet + "\"."
+                    );
+                    numFails += 1;
+                    break;
                 }
             }
         }
