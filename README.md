@@ -1,4 +1,29 @@
 # flow-jsdoc
+```javascript
+// Converts this:
+
+/**
+ * @param {Foobar[]} bar A foobar array
+ * @param {Function} baz
+ * @return {number}
+ */
+function foo(bar, baz) {
+    return 42;
+}
+
+// Into this:
+
+/**
+ * @param {Foobar[]} bar A foobar array
+ * @param {Function} baz
+ * @return {number}
+ */
+function foo(bar: Array<Foobar>, baz: Function) : number {
+    return 42;
+}
+```
+
+
 Use JSDoc to represent Flow annotations. The goal of this project is to make type checking as easy as running a linter, so you can take any project and run the following to get type errors:
 ```
  $ flow-jsdoc -d ./lib -o ./annotated
