@@ -1,4 +1,5 @@
 # flow-jsdoc
+[![Build Status](https://travis-ci.org/Kegsay/flow-jsdoc.svg?branch=master)](https://travis-ci.org/Kegsay/flow-jsdoc)
 
 This is a CLI tool to convert [JSDoc](http://usejsdoc.org/index.html) annotations into standard [Flow](https://flowtype.org/) type annotations. This means:
  - You only need to document your types once: in JSDoc.
