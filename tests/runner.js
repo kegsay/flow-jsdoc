@@ -76,6 +76,9 @@ function snippet(line, charNum) {
 }
 
 function escape(thing) {
+    if (thing === undefined) {
+        return "<missing>";
+    }
     var escapedThing = JSON.stringify(thing);
     return escapedThing.substring(1, escapedThing.length-1);
 }

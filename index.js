@@ -25,7 +25,7 @@ function extractJsdoc(comment) {
     if (!docAst.tags) {
         return null;
     }
-    // only interested in @param and @return
+    // only interested in @param @property, and @return
     var paramTags = docAst.tags.filter(function(tag) {
         return tag.title === "param";
     }).map(jsdocTagToFlowTag);
@@ -34,9 +34,14 @@ function extractJsdoc(comment) {
         return tag.title === "return";
     }).map(jsdocTagToFlowTag);
 
+    var propTags = docAst.tags.filter(function(tag) {
+        return tag.title === "property" || tag.title === "prop";
+    }).map(jsdocTagToFlowTag);
+
     return {
         params: paramTags,
-        returns: returnTags
+        returns: returnTags,
+        props: propTags
     };
 }
 
@@ -83,10 +88,9 @@ function getCommentedFunctionNode(node) {
         // nothing here, we ain't interested.
         return null;
     }
-    /*
-    console.log("=================");
-    console.log("type: " + node.type);
-    console.log(util.inspect(node)); */
+    // console.log("=================");
+    // console.log("type: " + node.type);
+    // console.log(util.inspect(node));
     /*
      * We handle 5 different function representations:
      *
@@ -146,39 +150,121 @@ function getCommentedFunctionNode(node) {
     };
 }
 
+/**
+ * Retrieve an ES6 class node along with parsed JSDoc comments from the constructor().
+ * @param {Node} node The node to inspect.
+ * @return {?Object} An object with "jsdoc" and "node" keys, or null.
+ */
+function getCommentedClassNode(node) {
+    if (node.type !== "ClassBody") {
+        return null;
+    }
+    // look for a constructor() and then look for property tags which we can annotate with.
+    var constructNode = null;
+    for (var i = 0; i < node.body.length; i++) {
+        if (node.body[i].kind === "constructor" && node.body[i].type === "MethodDefinition") {
+            constructNode = node.body[i];
+        }
+    }
+
+    if (!constructNode) {
+        return null;
+    }
+
+    // check for @property JSDoc
+    var constructDocs = null;
+    for (var i=0; i<constructNode.leadingComments.length; i++) {
+        if (constructNode.leadingComments[i].type === "Block") {
+            constructDocs = extractJsdoc(constructNode.leadingComments[i].value);
+            break;
+        }
+    }
+    return {
+        node: node,
+        jsdoc: constructDocs
+    };
+}
+
+function decorateFunctions(node) {
+    var i;
+    var funcNode = getCommentedFunctionNode(node);
+    if (!funcNode || !funcNode.jsdoc) {
+        return;
+    }
+
+    // Pair up the function params with the JSDoc params (if they exist)
+    funcNode.node.params.forEach(function(param) {
+        for (i = 0; i < funcNode.jsdoc.params.length; i++) {
+            if (funcNode.jsdoc.params[i].name === param.name &&
+                    funcNode.jsdoc.params[i].type) {
+                // replace the function param name with the type annotated param
+                param.update(
+                    param.source() + ": " + funcNode.jsdoc.params[i].type
+                );
+            }
+        }
+    });
+
+    // Pair up the return value if possible
+    // we only support 1 return type currently
+    var returnDoc = funcNode.jsdoc.returns[0];
+    if (returnDoc && returnDoc.type && funcNode.node.body) {
+        funcNode.node.body.update(
+            ": " + returnDoc.type + " " + funcNode.node.body.source()
+        );
+    }
+}
+
+function decorateClasses(node) {
+    // check for class nodes
+    var clsNode = getCommentedClassNode(node);
+    if (!clsNode || !clsNode.jsdoc || clsNode.jsdoc.props.length === 0) {
+        return;
+    }
+
+    var clsSrc = clsNode.node.source();
+    if (clsSrc[0] !== "{") {
+        // something isn't right, bail.
+        return;
+    }
+
+    // work out line endings (find first \n and see if it has \r before it)
+    var nl = "\n";
+    var newlineIndex = clsSrc.indexOf("\n");
+    if (clsSrc[newlineIndex-1] === "\r") {
+        nl = "\r\n";
+    }
+
+    // use the same indent as the next non-blank line
+    var indent = "";
+    var lines = clsSrc.split(nl);
+    for (var i = 1; i < lines.length; i++) { //i=1 to skip the starting {
+        if (lines[i].length > 0) {
+            var whitespaceMatch = /^[ \t]+/.exec(lines[i]); // match spaces or tabs
+            if (whitespaceMatch) {
+                indent = whitespaceMatch[0];
+                break;
+            }
+        }
+    }
+
+    // work out what to inject into the class definition
+    var fieldTypeDecls = clsNode.jsdoc.props.map(function(p) {
+        return indent + p.name + ": " + p.type + ";";
+    }).join(nl);
+
+    clsNode.node.update("{" + nl + fieldTypeDecls + clsSrc.substr(1));
+    return;
+}
+
 module.exports = function(src, opts) {
     opts = opts || {};
 
     // Esprima has an undocumented 'attachComment' option which binds comments
     // to the nodes in the AST
     var output = falafel(src, {attachComment: true}, function (node) {
-        var i;
-        var funcNode = getCommentedFunctionNode(node);
-        if (!funcNode || !funcNode.jsdoc) {
-            return;
-        }
-
-        // Pair up the function params with the JSDoc params (if they exist)
-        funcNode.node.params.forEach(function(param) {
-            for (i = 0; i < funcNode.jsdoc.params.length; i++) {
-                if (funcNode.jsdoc.params[i].name === param.name &&
-                        funcNode.jsdoc.params[i].type) {
-                    // replace the function param name with the type annotated param
-                    param.update(
-                        param.source() + ": " + funcNode.jsdoc.params[i].type
-                    );
-                }
-            }
-        });
-
-        // Pair up the return value if possible
-        // we only support 1 return type currently
-        var returnDoc = funcNode.jsdoc.returns[0];
-        if (returnDoc && returnDoc.type && funcNode.node.body) {
-            funcNode.node.body.update(
-                ": " + returnDoc.type + " " + funcNode.node.body.source()
-            );
-        }
+        decorateFunctions(node);
+        decorateClasses(node);
     });
 
     return output;
