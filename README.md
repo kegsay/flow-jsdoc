@@ -1,4 +1,9 @@
 # flow-jsdoc
+
+This is a CLI tool to convert [JSDoc](http://usejsdoc.org/index.html) annotations into standard [Flow](https://flowtype.org/) type annotations. This means:
+ - You only need to document your types once: in JSDoc.
+ - You can get the benefits of Flow without having to go through a [transpiler](http://babeljs.io/), and without having to use [ugly looking comment syntax](https://flowtype.org/blog/2015/02/20/Flow-Comments.html).
+
 ```javascript
 // Converts this:
 
@@ -23,8 +28,7 @@ function foo(bar: Array<Foobar>, baz: Function) : number {
 }
 ```
 
-
-Use JSDoc to represent Flow annotations. The goal of this project is to make type checking as easy as running a linter, so you can take any project and run the following to get type errors:
+The goal of this project is to make type checking as easy as running a linter, so you can take any project and run the following to get type errors:
 ```
  $ flow-jsdoc -d ./lib -o ./annotated
  $ flow check --all ./annotated
@@ -58,7 +62,7 @@ Use JSDoc to represent Flow annotations. The goal of this project is to make typ
 
 
 # What this does
-Currently, this tool will only work on functions. It will handle functions represented in the following ways:
+Currently, this tool will only work on functions and ES6 classes. It will handle functions represented in the following ways:
  * `function foo(bar) {}`
  * `var foo = function(bar) {}`
  * `var obj = { foo: function(bar) {}`
@@ -73,11 +77,45 @@ For each recognised function, the JSDoc tags `@param` and `@return` will be mapp
  * `{string=}` => `: ?string` (Optional params)
  * `{?string}` => `: ?string` (Nullable types)
 
+ES6 classes will include [field declarations](https://flowtype.org/docs/classes.html#_) via the `@prop` and `@property` tags like so:
+
+```javascript
+// Converts this ES6 Class:
+
+class Foo {
+  /**
+   * Construct a Foo.
+   * @property {string} bar
+   * @prop {number} baz
+   */
+  constructor(bar, baz) {
+    this.bar = bar;
+    this.baz = baz;
+  }
+}
+
+// Into this:
+
+class Foo {
+  bar: string;
+  baz: number;
+
+  /**
+   * Construct a Foo.
+   * @property {string} bar
+   * @prop {number} baz
+   */
+  constructor(bar, baz) {
+    this.bar = bar;
+    this.baz = baz;
+  }
+}
+```
+
 This tool will then produce the whole file again with flow annotations included (JSDoc preserved).
 
 # Additions
 There are plans for this tool to (roughly in priority order):
- * **Support ES5 prototype classes.** Flow has limited support for prototype classes. It handles stuff assigned to the `prototype` but not properties which are assigned to `this`. Flow has "field type declarations" which declares the set of properties which will appear on `this`. However, their syntax only supports ES6 classes. JSDoc already has a syntax for setting properties: `@name Class#member`. This tool should be able to convert those docs into something parsable by Flow.
  * Handle record types `{{a: number, b: string, c}}`
  * **Auto-require()ing types you reference in other files if you don't import them yourself.** When you start type-annotating, sometimes you'll declare a type that is defined in another file but you won't need to require() it manually (e.g. because it's just passed as a function argument). Flow *needs* to know where the type is declared, so you need to import it somehow even if it's a no-op in the code. This tool should be able to automatically do this.
  * Handle type definitions `@typedef`
