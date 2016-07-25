@@ -10,7 +10,7 @@ class Foo {
      * @return {?Object}
      */
     baz(key: ?string) : ?Object {
-        return null;
+        return null;a
     }
 
     /**
