@@ -42,12 +42,12 @@ function foo(a, b) {
 
 // Into this:
 
-//: (string, number) : Object
 function foo(a: string, b: number) : Object {
   return {};
 }
 
 // NB: The ":" at the start of the comment is REQUIRED.
+// NBB: The in-line comment is REMOVED in the output to avoid Flow re-interpreting it..
 ```
 
 The goal of this project is to make type checking as easy as running a linter, so you can take any project and run the following to get type errors:
