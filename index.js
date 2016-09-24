@@ -22,7 +22,7 @@ function jsdocTagToFlowTag(tag) {
  */
 function extractJsdoc(comment) {
     var docAst = doctrine.parse(comment, { unwrap: true });
-    if (!docAst.tags) {
+    if (!docAst.tags || docAst.tags.length === 0) {
         return null;
     }
     // only interested in @param @property, and @return

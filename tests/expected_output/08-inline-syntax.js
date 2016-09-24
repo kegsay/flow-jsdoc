@@ -15,6 +15,10 @@ var ignore = function(a, b) {
 
 }
 
+/*:(string)*/
+function quuz(a: string) {
+
+}
 
 var obj = {
 
