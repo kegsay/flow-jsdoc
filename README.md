@@ -4,6 +4,7 @@
 This is a CLI tool to convert [JSDoc](http://usejsdoc.org/index.html) annotations into standard [Flow](https://flowtype.org/) type annotations. This means:
  - You only need to document your types once: in JSDoc.
  - You can get the benefits of Flow without having to go through a [transpiler](http://babeljs.io/), and without having to use [ugly looking comment syntax](https://flowtype.org/blog/2015/02/20/Flow-Comments.html).
+ - You can do tiny in-line type comments for those functions which don't have JSDoc but you still want types.
 
 ```javascript
 // Converts this:
@@ -27,6 +28,26 @@ function foo(bar, baz) {
 function foo(bar: Array<Foobar>, baz: Function) : number {
     return 42;
 }
+```
+
+Furthermore, a short in-line style is also supported:
+
+```js
+// Converts this:
+
+//: (string, number) : Object
+function foo(a, b) {
+  return {};
+}
+
+// Into this:
+
+//: (string, number) : Object
+function foo(a: string, b: number) : Object {
+  return {};
+}
+
+// NB: The ":" at the start of the comment is REQUIRED.
 ```
 
 The goal of this project is to make type checking as easy as running a linter, so you can take any project and run the following to get type errors:
