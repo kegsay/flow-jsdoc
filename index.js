@@ -213,11 +213,17 @@ function getCommentedFunctionNode(node) {
             if (funcDocs) { break; }
             // may be inline form with /* */
             funcDocs = extractInlineAnnotations(funcNode, node.leadingComments[i].value);
-            if (funcDocs) { break; }
+            if (funcDocs) {
+                node.leadingComments[i].update("");
+                break;
+            }
         }
         else if (node.leadingComments[i].type === "Line") {
             funcDocs = extractInlineAnnotations(funcNode, node.leadingComments[i].value);
-            if (funcDocs) { break; }
+            if (funcDocs) {
+                node.leadingComments[i].update("");
+                break;
+            }
         }
     }
 
