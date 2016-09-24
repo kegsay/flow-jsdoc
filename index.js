@@ -45,6 +45,76 @@ function extractJsdoc(comment) {
     };
 }
 
+/**
+ * Extract "formatted JSDoc" from an in-line comment. This is actually a
+ * custom syntax specific to flow-jsdoc which looks like:
+ *    //: (string, number): Object
+ * There needs to be a ":" to start it off (to avoid false positives).
+ * Since there are no parameter names in this syntax form, the function
+ * node is also required.
+ * @return {Object} Exactly the same format as `extractJsdoc(comment)`.
+ */
+function extractInlineAnnotations(funcNode, comment) {
+    comment = comment.trim();
+    if (comment[0] !== ":") {
+        return null;
+    }
+    // [ "", " (string, number)", " Object" ]
+    var segments = comment.split(":");
+    var returnType = segments[2] ? segments[2].trim() : null; // optional, may be 'void'
+    var paramBlock = segments[1].trim();
+    if (paramBlock[0] !== "(" || paramBlock[paramBlock.length-1] !== ")") {
+        panicInline(funcNode, comment,
+            "Expected inline comment to have ( ) around parameters"
+        );
+    }
+    paramBlock = paramBlock.slice(1, -1); // "string, number"
+    var paramTypes = paramBlock.split(",").map(function(p) {
+        return p.trim();
+    }).filter(function(p) {
+        return p.length > 0;
+    });
+
+    // Make sure the number of params in the comment == num in function
+    if (paramTypes.length !== funcNode.params.length) {
+        panicInline(funcNode, comment,
+            "Inline comment has wrong number of parameters: " + paramTypes.length +
+            ". Expected: " + funcNode.params.length
+        );
+        process.exit(1);
+    }
+
+    var paramTags = funcNode.params.map(function(p, i) {
+        return {
+            loc: "param",
+            name: p.name,
+            type: paramTypes[i]
+        };
+    });
+    var returnTags = [];
+    if (returnType) {
+        returnTags = [{
+            loc: "return",
+            type: returnType
+        }];
+    }
+
+    return {
+        params: paramTags,
+        returns: returnTags,
+        props: []
+    };
+}
+
+function panicInline(funcNode, comment, msg) {
+    console.error(
+        msg + "\n" +
+        "    " + comment + "\n" +
+        "    " + funcNode.source().split("\n")[0] // just the function header
+    );
+    process.exit(1);
+}
+
 function jsdocTypeToFlowType(jsdocType) {
     if (!jsdocType || !jsdocType.type) {
         return;
@@ -140,7 +210,14 @@ function getCommentedFunctionNode(node) {
     for (var i=0; i<node.leadingComments.length; i++) {
         if (node.leadingComments[i].type === "Block") {
             funcDocs = extractJsdoc(node.leadingComments[i].value);
-            break;
+            if (funcDocs) { break; }
+            // may be inline form with /* */
+            funcDocs = extractInlineAnnotations(funcNode, node.leadingComments[i].value);
+            if (funcDocs) { break; }
+        }
+        else if (node.leadingComments[i].type === "Line") {
+            funcDocs = extractInlineAnnotations(funcNode, node.leadingComments[i].value);
+            if (funcDocs) { break; }
         }
     }
 
