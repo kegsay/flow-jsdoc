@@ -345,7 +345,7 @@ module.exports = function(src, opts) {
 
     // Esprima has an undocumented 'attachComment' option which binds comments
     // to the nodes in the AST
-    var output = falafel(src, {attachComment: true}, function (node) {
+    var output = falafel(src, {attachComment: true, jsx: true, sourceType: "module"}, function (node) {
         decorateFunctions(node);
         decorateClasses(node);
     });
