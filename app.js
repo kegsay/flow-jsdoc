@@ -12,12 +12,14 @@ var opts = nopt({
     "file": path,
     "directory": path,
     "outdir": path,
-    "copy": Boolean
+    "copy": Boolean,
+    "skip": Boolean
 }, {
     "f": "--file",
     "d": "--directory",
     "o": "--outdir",
-    "c": "--copy"
+    "c": "--copy",
+    "s": "--skip"
 });
 
 if (opts.file) {
@@ -68,7 +70,20 @@ else if (opts.directory && opts.outdir) {
                 return;
             }
             console.log(fpath);
-            var output = jsdocFlow(fs.readFileSync(fpath, "utf8"));
+            var input = fs.readFileSync(fpath, "utf8");
+            var output;
+            try {
+                output = jsdocFlow(input);
+            }
+            catch(err) {
+                if (opts.skip) {
+                    console.log("    Failed to parse: " + err);
+                    output = input;
+                }
+                else {
+                    throw err;
+                }
+            }
             fs.writeFileSync(outFilePath, output);
         });
     });
@@ -83,6 +98,7 @@ else {
     console.log(" -d, --directory PATH   The directory with .js files to convert. Will inspect recursively.");
     console.log(" -o, --outdir PATH      Required if -d is set. The output directory to dump flow-annotated files to.");
     console.log(" -c, --copy             Set to copy other file extensions across to outdir.");
+    console.log(" -s, --skip             Set to copy over .js files which cannot be parsed correctly (e.g. invalid ES6) to outdir.");
     console.log("File Usage:\n  flow-jsdoc -f path/to/file.js");
     console.log("Directory Usage:\n  flow-jsdoc -d path/to/dir -o out/dir -c");
     process.exit(0);
