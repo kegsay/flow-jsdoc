@@ -46,7 +46,8 @@ else if (opts.directory && opts.outdir) {
         }
         files.forEach(function(fpath) {
             // snip the absolute part to get the directory structure for outdir
-            var relativeDir = fpath.replace(absDirectory, "");
+            // Also make sure we're speaking the same slashes
+            var relativeDir = fpath.replace(absDirectory.replace(/\\/g, "/"), "");
             var outFilePath = path.join(absOutDirectory, relativeDir);
             // make directories after stripping filename
             mkdirp.sync(path.dirname(outFilePath));
@@ -66,6 +67,7 @@ else if (opts.directory && opts.outdir) {
                 rs.pipe(ws);
                 return;
             }
+            console.log(fpath);
             var output = jsdocFlow(fs.readFileSync(fpath, "utf8"));
             fs.writeFileSync(outFilePath, output);
         });

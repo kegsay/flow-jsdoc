@@ -250,7 +250,7 @@ function getCommentedClassNode(node) {
         }
     }
 
-    if (!constructNode) {
+    if (!constructNode || !constructNode.leadingComments) {
         return null;
     }
 
