@@ -172,10 +172,12 @@ function getCommentedFunctionNode(node) {
      * MethodDefinition      .value                     class ObjClass { foo(bar) {} }
      * Property              .value                     var obj = { key: function(bar) {} }
      * ReturnStatement       .argument                  return function(foo, bar) {}
+     * ArrowFunctionExpression       -                  (foo, bar) => {}
+     * 
      */
     var nodeTypes = [
         "FunctionDeclaration", "ExpressionStatement", "VariableDeclaration",
-        "MethodDefinition", "Property", "ReturnStatement"
+        "MethodDefinition", "Property", "ReturnStatement", "ArrowFunctionExpression"
     ];
     if (nodeTypes.indexOf(node.type) === -1) {
         return null;
@@ -183,6 +185,7 @@ function getCommentedFunctionNode(node) {
     var funcNode = null;
     switch (node.type) {
         case "FunctionDeclaration":
+        case "ArrowFunctionExpression":
             funcNode = node;
             break;
         case "VariableDeclaration":
@@ -201,7 +204,7 @@ function getCommentedFunctionNode(node) {
             funcNode = node.argument;
             break;
     }
-    var funcNodeTypes = ["FunctionDeclaration", "FunctionExpression"];
+    var funcNodeTypes = ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"];
     if (!funcNode || funcNodeTypes.indexOf(funcNode.type) === -1) {
         // We can't find a function here which can map to leadingComments.
         return null;
@@ -292,9 +295,33 @@ function decorateFunctions(node) {
     // we only support 1 return type currently
     var returnDoc = funcNode.jsdoc.returns[0];
     if (returnDoc && returnDoc.type && funcNode.node.body) {
-        funcNode.node.body.update(
-            ": " + returnDoc.type + " " + funcNode.node.body.source()
-        );
+        if (funcNode.node.type === "ArrowFunctionExpression") {
+            // we can't just add this to the end as it will then appear AFTER the =>
+            // whereas we actually want it BEFORE the =>
+            // Sadly, there isn't a nice way to access the bit before the =>. We do
+            // however know that the node source is the entire function, and the node
+            // body is the stuff between the { }. We can therefore grab the function
+            // header portion and find/replace on the fat arrow.
+            var funcHeader = funcNode.node.source().replace(funcNode.node.body.source(), "");
+            var arrowIndex = funcHeader.lastIndexOf("=>");
+            if (arrowIndex === -1) {
+                // well this was unexpected...
+                return;
+            }
+            // inject annotation before the arrow
+            funcHeader = (
+                funcHeader.slice(0, arrowIndex) + ": " + returnDoc.type + " " + funcHeader.slice(arrowIndex)
+            );
+            // replace the entire function to replace the header portion
+            funcNode.node.update(
+                funcHeader + funcNode.node.body.source()
+            );
+        }
+        else {
+            funcNode.node.body.update(
+                ": " + returnDoc.type + " " + funcNode.node.body.source()
+            );
+        }
     }
 }
 

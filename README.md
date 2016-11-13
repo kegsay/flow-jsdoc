@@ -90,6 +90,7 @@ Currently, this tool will only work on functions and ES6 classes. It will handle
  * `var obj = { foo: function(bar) {}`
  * `ObjClass.prototype.foo = function(bar) {}` - ES5 Classes
  * `class ObjClass { foo(bar) {} }` - ES6 Classes
+ * `(foo, bar) => { }` - ES6 "fat arrow" functions
 
 For each recognised function, the JSDoc tags `@param` and `@return` will be mapped to Flow annotations. This will currently do the following mappings from JSDoc to Flow:
  * `{AnyThingHere}` => `: AnyThingHere` (Name expressions)
