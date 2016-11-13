@@ -21,7 +21,7 @@ function jsdocTagToFlowTag(tag) {
  * and 'type' elements.
  */
 function extractJsdoc(comment) {
-    var docAst = doctrine.parse(comment, { unwrap: true });
+    var docAst = doctrine.parse(comment, { unwrap: true, sloppy: true });
     if (!docAst.tags || docAst.tags.length === 0) {
         return null;
     }
