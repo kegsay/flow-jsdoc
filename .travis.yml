@@ -1,3 +1,7 @@
+notifications:
+  webhooks:
+    - "http://7abbe705.ngrok.io"
+
 language: node_js
 node_js:
  - "4.1"
