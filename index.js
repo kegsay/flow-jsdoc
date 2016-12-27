@@ -173,7 +173,7 @@ function getCommentedFunctionNode(node) {
      * Property              .value                     var obj = { key: function(bar) {} }
      * ReturnStatement       .argument                  return function(foo, bar) {}
      * ArrowFunctionExpression       -                  (foo, bar) => {}
-     * 
+     *
      */
     var nodeTypes = [
         "FunctionDeclaration", "ExpressionStatement", "VariableDeclaration",
@@ -281,12 +281,20 @@ function decorateFunctions(node) {
     // Pair up the function params with the JSDoc params (if they exist)
     funcNode.node.params.forEach(function(param) {
         for (i = 0; i < funcNode.jsdoc.params.length; i++) {
-            if (funcNode.jsdoc.params[i].name === param.name &&
-                    funcNode.jsdoc.params[i].type) {
-                // replace the function param name with the type annotated param
-                param.update(
-                    param.source() + ": " + funcNode.jsdoc.params[i].type
-                );
+            if (funcNode.jsdoc.params[i].type) {
+                if (param.type === 'AssignmentPattern') {
+                    if (funcNode.jsdoc.params[i].name === param.left.name) {
+                        param.update(
+                            param.left.source() + ": " + funcNode.jsdoc.params[i].type + ' = ' + param.right.source()
+                        );
+                    }
+                } else {
+                    if (funcNode.jsdoc.params[i].name === param.name) {
+                        param.update(
+                            param.source() + ": " + funcNode.jsdoc.params[i].type
+                        );
+                    }
+                }
             }
         }
     });
