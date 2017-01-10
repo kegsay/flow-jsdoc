@@ -87,7 +87,7 @@ The goal of this project is to make type checking as easy as running a linter, s
 Currently, this tool will only work on functions and ES6 classes. It will handle functions represented in the following ways:
  * `function foo(bar) {}`
  * `var foo = function(bar) {}`
- * `var obj = { foo: function(bar) {}`
+ * `var obj = { foo: function(bar) {} }`
  * `ObjClass.prototype.foo = function(bar) {}` - ES5 Classes
  * `class ObjClass { foo(bar) {} }` - ES6 Classes
  * `(foo, bar) => { }` - ES6 "fat arrow" functions
