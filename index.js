@@ -288,9 +288,11 @@ function decorateFunctions(node) {
             // If default options are set keep the assignment in flow
             if (param.type === 'AssignmentPattern') {
                 if (funcNode.jsdoc.params[i].name === param.left.name) {
-                    console.log(funcNode.jsdoc.params[i].type);
+                    // Remove ? if default value is set
+                    var type = funcNode.jsdoc.params[i].type.replace(/^\?/, '');
+
                     param.update(
-                        param.left.source() + ": " + funcNode.jsdoc.params[i].type + ' = ' + param.right.source()
+                        param.left.source() + ": " + type + ' = ' + param.right.source()
                     );
                 }
             } else {

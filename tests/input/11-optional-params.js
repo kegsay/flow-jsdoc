@@ -19,3 +19,11 @@ function allTheOptionalForms(foo, bar, baz, quuz) {
 function allTheOptionalFormsWithDefaults(foo, bar, baz = 'Nope', quuz = 'Nope Nope Nope') {
 	return 4;
 };
+
+/**
+ * @param {number} foo
+ * @return {number}
+ */
+function optionalParamWithWrongJSdoc(foo = '4') {
+	return Number(foo);
+};
