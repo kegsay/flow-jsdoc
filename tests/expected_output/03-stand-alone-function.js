@@ -6,3 +6,10 @@
 function foo(bar: Array<Foobar>, baz: Function) : number {
     return 42;
 }
+
+/**
+ * @returns {number}
+ */
+function bar() : number {
+    return 42;
+}
