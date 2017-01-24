@@ -31,7 +31,7 @@ function extractJsdoc(comment) {
     }).map(jsdocTagToFlowTag);
 
     var returnTags = docAst.tags.filter(function(tag) {
-        return tag.title === "return";
+        return tag.title === "return" || tag.title === "returns";
     }).map(jsdocTagToFlowTag);
 
     var propTags = docAst.tags.filter(function(tag) {

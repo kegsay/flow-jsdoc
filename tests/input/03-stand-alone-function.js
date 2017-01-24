@@ -6,3 +6,10 @@
 function foo(bar, baz) {
     return 42;
 }
+
+/**
+ * @returns {number}
+ */
+function bar() {
+    return 42;
+}
