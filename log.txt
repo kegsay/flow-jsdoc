@@ -1,0 +1,5 @@
+
+> flow-jsdoc@0.2.2 test /Volumes/MAC_EXTRA/Projects/tmp/flow-jsdoc
+> node tests/runner.js
+
+0 test failures out of 11 tests.

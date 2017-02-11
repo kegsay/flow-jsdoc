@@ -5,7 +5,6 @@
   "main": "index.js",
   "dependencies": {
     "doctrine": "^0.6.4",
-    "esprima": "^3.0.0",
     "glob": "^5.0.14",
     "mkdirp": "^0.5.1",
     "nopt": "^3.0.3"
@@ -13,7 +12,13 @@
   "repository": {
     "url": "https://github.com/Kegsay/flow-jsdoc"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "babylon": "^6.15.0",
+    "esprima": "^3.0.0"
+  },
+  "peerDependencies": {
+    "esprima": "3.x.x"
+  },
   "scripts": {
     "test": "node tests/runner.js"
   },

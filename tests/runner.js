@@ -10,6 +10,24 @@ var outputDir = path.join(__dirname, "/expected_output");
 var RED = "\x1b[41m";
 var RESET = "\x1b[49m";
 
+var runnerOptions = {
+    // esprima default
+    esprima: {},
+    babylon: {
+        parse: require("babylon").parse,
+        parseOptions: {
+            // parse in strict mode and allow module declarations
+            sourceType: "module",
+
+            plugins: [
+                // enable jsx and flow syntax
+                "jsx",
+                "flow"
+            ]
+        }
+    }
+};
+
 glob(inputDir + "/*.js", function(err, files) {
     if (err) {
         console.error(err);
@@ -21,42 +39,48 @@ glob(inputDir + "/*.js", function(err, files) {
     files.forEach(function(f) {
         f = path.resolve(f); // convert \ to / so we can replace with out dir
         var outFile = f.replace(inputDir, outputDir);
-        var expectedOutput = fs.readFileSync(outFile, "utf8");
-        var actualOutput = new String(jsdocFlow(fs.readFileSync(f, "utf8")));
-        // console.log("EXPECT: " + expectedOutput);
-        // console.log("ACTUAL: " + actualOutput);
-        var actualOutLines = actualOutput.split("\n");
-        var expectedOutLines = expectedOutput.split("\n");
-        if (actualOutLines.length === expectedOutLines.length) {
-            for (var lineNum = 0; lineNum < actualOutLines.length; lineNum++) {
-                if (actualOutLines[lineNum] === expectedOutLines[lineNum]) {
-                    continue;
-                }
-                var lineLength = Math.max(actualOutLines[lineNum].length, expectedOutLines[lineNum].length);
-                for (var charNum = 0; charNum < lineLength; charNum++) {
-                    if (actualOutLines[lineNum][charNum] === expectedOutLines[lineNum][charNum]) {
+
+        // loop through runners
+        for (var runner in runnerOptions) {
+            var opts = runnerOptions[runner];
+            var expectedOutput = fs.readFileSync(outFile, "utf8");
+            var actualOutput = new String(jsdocFlow(fs.readFileSync(f, "utf8"), opts));
+            // console.log("EXPECT: " + expectedOutput);
+            // console.log("ACTUAL: " + actualOutput);
+            var actualOutLines = actualOutput.split("\n");
+            var expectedOutLines = expectedOutput.split("\n");
+            if (actualOutLines.length === expectedOutLines.length) {
+                for (var lineNum = 0; lineNum < actualOutLines.length; lineNum++) {
+                    if (actualOutLines[lineNum] === expectedOutLines[lineNum]) {
                         continue;
                     }
-                    var badChar = escape(actualOutLines[lineNum][charNum]);
-                    var actualSnippet = snippet(actualOutLines[lineNum], charNum);
-                    var expectedSnippet = snippet(expectedOutLines[lineNum], charNum);
-                    
-                    console.error(
-                        "%s:%s:%s %s", outFile, lineNum + 1, charNum + 1,
-                        "Unexpected char: '" + badChar + "'. " +
-                        "Got \"" + actualSnippet + "\", expected \"" + expectedSnippet + "\"."
-                    );
-                    numFails += 1;
-                    break;
+                    var lineLength = Math.max(actualOutLines[lineNum].length, expectedOutLines[lineNum].length);
+                    for (var charNum = 0; charNum < lineLength; charNum++) {
+                        if (actualOutLines[lineNum][charNum] === expectedOutLines[lineNum][charNum]) {
+                            continue;
+                        }
+                        var badChar = escape(actualOutLines[lineNum][charNum]);
+                        var actualSnippet = snippet(actualOutLines[lineNum], charNum);
+                        var expectedSnippet = snippet(expectedOutLines[lineNum], charNum);
+
+                        console.error(
+                            "%s:%s:%s %s", outFile, lineNum + 1, charNum + 1,
+                            "Unexpected char: '" + badChar + "'. " +
+                            "Got \"" + actualSnippet + "\", expected \"" + expectedSnippet + "\"."
+                        );
+                        numFails += 1;
+                        break;
+                    }
                 }
             }
-        }
-        else {
-            console.error(
-                "%s:%s %s", outFile, 0,
-                "Expected " + expectedOutLines.length + " lines, got " + actualOutLines.length
-            );
-            numFails += 1;
+            else {
+                console.error(
+                    "%s:%s %s", outFile, 0,
+                    "Expected " + expectedOutLines.length + " lines, got " + actualOutLines.length,
+                    "Runner: " + runner
+                );
+                numFails += 1;
+            }
         }
     });
     console.log("%s test failures out of %s tests.", numFails, files.length);
