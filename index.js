@@ -169,21 +169,24 @@ function getCommentedFunctionNode(node) {
      * FunctionDeclaration           -                  function foo(bar) {}
      * VariableDeclaration   .declarations[0].init      var foo = function(bar) {}
      * ExpressionStatement   .expression.right          ObjClass.prototype.foo = function(bar) {}
+     * ClassMethod           .value                     class ObjClass { foo(bar) {} }
      * MethodDefinition      .value                     class ObjClass { foo(bar) {} }
      * Property              .value                     var obj = { key: function(bar) {} }
+     * ObjectProperty        .value                     var obj = { key: function(bar) {} }
      * ReturnStatement       .argument                  return function(foo, bar) {}
      * ArrowFunctionExpression       -                  (foo, bar) => {}
      *
      */
     var nodeTypes = [
-        "FunctionDeclaration", "ExpressionStatement", "VariableDeclaration",
-        "MethodDefinition", "Property", "ReturnStatement", "ArrowFunctionExpression"
+        "FunctionDeclaration", "ExpressionStatement", "VariableDeclaration", "ClassMethod",
+        "MethodDefinition", "Property", "ObjectProperty", "ReturnStatement", "ArrowFunctionExpression"
     ];
     if (nodeTypes.indexOf(node.type) === -1) {
         return null;
     }
     var funcNode = null;
     switch (node.type) {
+        case "ClassMethod":
         case "FunctionDeclaration":
         case "ArrowFunctionExpression":
             funcNode = node;
@@ -197,6 +200,7 @@ function getCommentedFunctionNode(node) {
         case "MethodDefinition":
             funcNode = node.value;
             break;
+        case "ObjectProperty":
         case "Property":
             funcNode = node.value;
             break;
@@ -204,14 +208,14 @@ function getCommentedFunctionNode(node) {
             funcNode = node.argument;
             break;
     }
-    var funcNodeTypes = ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"];
+    var funcNodeTypes = ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression", "ClassMethod"];
     if (!funcNode || funcNodeTypes.indexOf(funcNode.type) === -1) {
         // We can't find a function here which can map to leadingComments.
         return null;
     }
     var funcDocs = null;
     for (var i=0; i<node.leadingComments.length; i++) {
-        if (node.leadingComments[i].type === "Block") {
+        if (["Block", "CommentBlock"].indexOf(node.leadingComments[i].type) > -1) {
             funcDocs = extractJsdoc(node.leadingComments[i].value);
             if (funcDocs) { break; }
             // may be inline form with /* */
@@ -221,7 +225,7 @@ function getCommentedFunctionNode(node) {
                 break;
             }
         }
-        else if (node.leadingComments[i].type === "Line") {
+        else if (["Line", "CommentLine"].indexOf(node.leadingComments[i].type) > -1) {
             funcDocs = extractInlineAnnotations(funcNode, node.leadingComments[i].value);
             if (funcDocs) {
                 node.leadingComments[i].update("");
@@ -248,7 +252,7 @@ function getCommentedClassNode(node) {
     // look for a constructor() and then look for property tags which we can annotate with.
     var constructNode = null;
     for (var i = 0; i < node.body.length; i++) {
-        if (node.body[i].kind === "constructor" && node.body[i].type === "MethodDefinition") {
+        if (node.body[i].kind === "constructor" && ["MethodDefinition", "ClassMethod"].indexOf(node.body[i].type) > -1) {
             constructNode = node.body[i];
         }
     }
@@ -260,7 +264,7 @@ function getCommentedClassNode(node) {
     // check for @property JSDoc
     var constructDocs = null;
     for (var i=0; i<constructNode.leadingComments.length; i++) {
-        if (constructNode.leadingComments[i].type === "Block") {
+        if (["Block", "CommentBlock"].indexOf(constructNode.leadingComments[i].type) > -1) {
             constructDocs = extractJsdoc(constructNode.leadingComments[i].value);
             break;
         }
@@ -381,12 +385,25 @@ function decorateClasses(node) {
     return;
 }
 
+var defaults = {
+    parseOptions: {
+        attachComment: true,
+        jsx: true,
+        sourceType: "module",
+        range: true,
+    },
+};
+
 module.exports = function(src, opts) {
-    opts = opts || {};
+    opts = Object.assign({}, defaults, opts);
+
+    if (!opts.parse) {
+        opts.parse = require('esprima').parse;
+    }
 
     // Esprima has an undocumented 'attachComment' option which binds comments
     // to the nodes in the AST
-    var output = falafel(src, {attachComment: true, jsx: true, sourceType: "module"}, function (node) {
+    var output = falafel(src, opts, function (node) {
         decorateFunctions(node);
         decorateClasses(node);
     });
