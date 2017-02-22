@@ -173,11 +173,13 @@ function getCommentedFunctionNode(node) {
      * Property              .value                     var obj = { key: function(bar) {} }
      * ReturnStatement       .argument                  return function(foo, bar) {}
      * ArrowFunctionExpression       -                  (foo, bar) => {}
+     * ExportNamedDeclaration .declaration              export function foo(bar) {}
      *
      */
     var nodeTypes = [
         "FunctionDeclaration", "ExpressionStatement", "VariableDeclaration",
-        "MethodDefinition", "Property", "ReturnStatement", "ArrowFunctionExpression"
+        "MethodDefinition", "Property", "ReturnStatement", "ArrowFunctionExpression",
+        "ExportNamedDeclaration"
     ];
     if (nodeTypes.indexOf(node.type) === -1) {
         return null;
@@ -202,6 +204,9 @@ function getCommentedFunctionNode(node) {
             break;
         case "ReturnStatement":
             funcNode = node.argument;
+            break;
+        case "ExportNamedDeclaration":
+            funcNode = node.declaration;
             break;
     }
     var funcNodeTypes = ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"];
