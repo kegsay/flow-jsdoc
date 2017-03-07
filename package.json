@@ -1,6 +1,6 @@
 {
   "name": "flow-jsdoc",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Represent flow type annotations with JSDoc syntax",
   "main": "index.js",
   "dependencies": {
