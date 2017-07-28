@@ -57,7 +57,7 @@ function extractJsdoc(comment) {
 function extractInlineAnnotations(funcNode, comment) {
     comment = comment.trim();
     if (comment[0] !== ":") {
-        return null;
+        return null; // invalid syntax
     }
     // [ "", " (string, number)", " Object" ]
     var segments = comment.split(":");
@@ -162,7 +162,7 @@ function getCommentedFunctionNode(node) {
     // console.log("type: " + node.type);
     // console.log(util.inspect(node));
     /*
-     * We handle 5 different function representations:
+     * We handle the following function representations:
      *
      *     Type               Path to Function              Example
      * ==========================================================================================
@@ -216,6 +216,7 @@ function getCommentedFunctionNode(node) {
     }
     var funcDocs = null;
     for (var i=0; i<node.leadingComments.length; i++) {
+        // Block comments are either JSDoc or flow-jsdoc specific in-inline syntax
         if (node.leadingComments[i].type === "Block") {
             funcDocs = extractJsdoc(node.leadingComments[i].value);
             if (funcDocs) { break; }
@@ -227,6 +228,7 @@ function getCommentedFunctionNode(node) {
             }
         }
         else if (node.leadingComments[i].type === "Line") {
+            // Line comments can only be flow-jsdoc specific in-line syntax.
             funcDocs = extractInlineAnnotations(funcNode, node.leadingComments[i].value);
             if (funcDocs) {
                 node.leadingComments[i].update("");
@@ -262,7 +264,7 @@ function getCommentedClassNode(node) {
         return null;
     }
 
-    // check for @property JSDoc
+    // check for @property JSDoc on the constructor
     var constructDocs = null;
     for (var i=0; i<constructNode.leadingComments.length; i++) {
         if (constructNode.leadingComments[i].type === "Block") {
@@ -276,6 +278,9 @@ function getCommentedClassNode(node) {
     };
 }
 
+/*
+ * Modify function signatures with flow syntax if there is JSDoc for said signature.
+ */
 function decorateFunctions(node) {
     var i;
     var funcNode = getCommentedFunctionNode(node);
@@ -344,6 +349,9 @@ function decorateFunctions(node) {
     }
 }
 
+/**
+ * Modify ES6 classes by adding 'field declarations' to them if the constructor has JSDoc.
+ */
 function decorateClasses(node) {
     // check for class nodes
     var clsNode = getCommentedClassNode(node);
@@ -383,14 +391,14 @@ function decorateClasses(node) {
     }).join(nl);
 
     clsNode.node.update("{" + nl + fieldTypeDecls + clsSrc.substr(1));
-    return;
 }
 
 module.exports = function(src, opts) {
     opts = opts || {};
 
+    // Walk the AST.
     // Esprima has an undocumented 'attachComment' option which binds comments
-    // to the nodes in the AST
+    // to the nodes in the AST.
     var output = falafel(src, {attachComment: true, jsx: true, sourceType: "module"}, function (node) {
         decorateFunctions(node);
         decorateClasses(node);

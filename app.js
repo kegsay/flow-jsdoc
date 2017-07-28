@@ -39,6 +39,7 @@ else if (opts.directory && opts.outdir) {
             throw e;
         }
     }
+    // loop all files in absDirectory which have either any file ext or .js
     var fileExt = opts.copy ? "*" : "js";
     glob(absDirectory + "/**/*." + fileExt, function(err, files) {
         if (err) {
@@ -76,6 +77,8 @@ else if (opts.directory && opts.outdir) {
                 output = jsdocFlow(input);
             }
             catch(err) {
+                // if we fail to convert and --skip is enabled, then just copy
+                // the input file as-is.
                 if (opts.skip) {
                     console.log("    Failed to parse: " + err);
                     output = input;
