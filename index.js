@@ -206,7 +206,12 @@ function getCommentedFunctionNode(node) {
             funcNode = node.argument;
             break;
         case "ExportNamedDeclaration":
-            funcNode = node.declaration;
+            var declaration = node.declaration;
+            if (declaration.type === 'VariableDeclaration') {
+                funcNode = declaration.declarations[0].init;
+            } else {
+                funcNode = declaration
+            }
             break;
     }
     var funcNodeTypes = ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"];
