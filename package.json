@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "doctrine": "^0.6.4",
-    "esprima": "^3.0.0",
+    "esprima": "^4.0.0",
     "glob": "^5.0.14",
     "mkdirp": "^0.5.1",
     "nopt": "^3.0.3"
