@@ -1,6 +1,8 @@
 # flow-jsdoc
 [![Build Status](https://travis-ci.org/Kegsay/flow-jsdoc.svg?branch=master)](https://travis-ci.org/Kegsay/flow-jsdoc)
 
+This project is looking for maintainers: https://github.com/facebook/flow/issues/5670#issuecomment-436965321
+
 This is a CLI tool to convert [JSDoc](http://usejsdoc.org/index.html) annotations into standard [Flow](https://flowtype.org/) type annotations. This means:
  - You only need to document your types once: in JSDoc.
  - You can get the benefits of Flow without having to go through a [transpiler](http://babeljs.io/), and without having to use [ugly looking comment syntax](https://flowtype.org/blog/2015/02/20/Flow-Comments.html).
